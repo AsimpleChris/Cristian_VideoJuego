@@ -16,14 +16,19 @@ public class GridManager : MonoBehaviour
 
     public TextMeshProUGUI movesText;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI timerText; // NUEVO: para mostrar el temporizador en pantalla EVB
 
     private int score = 0;
     private GameObject[,] tileGrid;
+
+    public float timeLimit = 90f; // NUEVO: 1 minuto 30 segundos
+    private float timeRemaining;
 
     void Start()
     {
         currentMoves = maxMoves;
         score = 0;
+        timeRemaining = timeLimit; //AGREGADO EVB
         GenerateGrid();
         UpdateMovesUI();
         UpdateScoreUI();
@@ -34,6 +39,30 @@ public class GridManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             RestartGame(); // ← Reinicio con tecla R
+        }
+
+        if (!gameOver)
+        {
+            timeRemaining -= Time.deltaTime;
+            UpdateTimerUI();
+
+            if (timeRemaining <= 0f)
+            {
+                timeRemaining = 0f;
+
+                if (score< 2500)
+                {
+                    gameOver = true;
+                    Debug.Log("Tiempo agotado y puntaje insuficiente. ¡Perdiste!");
+                    movesText.text = "PERDISTE 😞";
+                }
+                else
+{
+    gameOver = true;
+    Debug.Log("Tiempo agotado, pero puntaje suficiente. ¡Ganaste!");
+    movesText.text = "¡GANASTE! 🎉";
+}
+            }
         }
     }
 
@@ -275,7 +304,20 @@ public class GridManager : MonoBehaviour
         if (scoreText != null)
             scoreText.text = "Puntaje: " + score.ToString();
     }
-    public void QuitGame()
+
+
+//AGREGADO TEMPORIZADOR EVB
+void UpdateTimerUI()
+{
+    if (timerText != null)
+    {
+        int minutes = Mathf.FloorToInt(timeRemaining / 60f);
+        int seconds = Mathf.FloorToInt(timeRemaining % 60f);
+        timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+    }
+}
+
+public void QuitGame()
 {
     Debug.Log("El juego se está cerrando...");
     Application.Quit();
